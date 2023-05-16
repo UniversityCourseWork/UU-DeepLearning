@@ -63,12 +63,12 @@ class WARWICKDataset(Dataset):
 
         # setup the data part
         self.data = torch.from_numpy(np.array(data, dtype=np.float32))
-        self.data = self.data.permute(0, 3, 1, 2)
+        self.data = self.data.permute(0, 3, 1, 2)/255.0
 
         # setup targets to be a 2 channel tensor
         # each channel represents a 0 / 1 class 
         # of the pixel color
-        self.original_targets = torch.from_numpy(np.array(targets, dtype=np.float32))
+        self.original_targets = torch.from_numpy(np.array(targets, dtype=np.float32))/255.0
         tmp = torch.zeros(self.original_targets.shape[0], 2, self.original_targets.shape[1], self.original_targets.shape[2])
         tmp[:, 0, :, :][self.original_targets[:, :, :]==0] = 1
         tmp[:, 1, :, :][self.original_targets[:, :, :]==1] = 1
