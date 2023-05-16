@@ -7,15 +7,8 @@ import re
 import torch
 from torch.utils.data import Dataset
 from typing import (
-    Generic,
-    Iterable,
-    Iterator,
-    List,
     Optional,
     Callable,
-    Tuple,
-    TypeVar,
-    Union
 )
 
 class WARWICKDataset(Dataset):
@@ -27,45 +20,59 @@ class WARWICKDataset(Dataset):
         train: bool = True,
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
+        n_train_images: int = 85,
+        n_test_images: int = 60,
         save_npz: bool = True,
+        train_npz: str = "npz/train",
+        test_npz: str = "npz/test",
+        run_device: str = "cpu",
     ):
         self.train = train
         self.root_dir = root_dir
         self.transform = transform
         self.target_transform = target_transform
-        
+        #self.run_device = run_device
+
         data = []
         targets = []        
 
         if train:
-            if os.path.isdir(f"{root_dir}/npz/train"):
-                data= np.load(f"{root_dir}/npz/train/x_train.npy")
-                targets = np.load(f"{root_dir}/npz/train/y_train.npy")
+            if os.path.isdir(f"{root_dir}/{train_npz}"):
+                data= np.load(f"{root_dir}/{train_npz}/x_train.npy")
+                targets = np.load(f"{root_dir}/{train_npz}/y_train.npy")
             else:
-                for image_path in glob.glob(f"{root_dir}/Train/image_*.png"):
-                    image_number = m = re.search('image_(.+?).png', image_path).group(1)
-                    data.append(imageio.imread(f"{root_dir}/Train/image_{image_number}.png"))
-                    targets.append(imageio.imread(f"{root_dir}/Train/label_{image_number}.png"))
+                for indx in range(n_train_images):
+                    data.append(imageio.imread(f"{root_dir}/Train/image_{'{:02}'.format(indx+1)}.png"))
+                    targets.append(imageio.imread(f"{root_dir}/Train/label_{'{:02}'.format(indx+1)}.png"))
                 if save_npz:
-                    os.makedirs(f"{root_dir}/npz/train")
-                    np.save(f"{root_dir}/npz/train/x_train", data)
-                    np.save(f"{root_dir}/npz/train/y_train", targets)
+                    os.makedirs(f"{root_dir}/{train_npz}")
+                    np.save(f"{root_dir}/{train_npz}/x_train", data)
+                    np.save(f"{root_dir}/{train_npz}/y_train", targets)
         else:
-            if os.path.isdir(f"{root_dir}/npz/test"):
-                data = np.load(f"{root_dir}/npz/test/x_test.npy")
-                targets = np.load(f"{root_dir}/npz/test/y_test.npy")
+            if os.path.isdir(f"{root_dir}/{test_npz}"):
+                data = np.load(f"{root_dir}/{test_npz}/x_test.npy")
+                targets = np.load(f"{root_dir}/{test_npz}/y_test.npy")
             else:
-                for image_path in glob.glob(f"{root_dir}/Test/image_*.png"):
-                    image_number = m = re.search('image_(.+?).png', image_path).group(1)
-                    data.append(imageio.imread(f"{root_dir}/Test/image_{image_number}.png"))
-                    targets.append(imageio.imread(f"{root_dir}/Test/label_{image_number}.png"))
+                for indx in range(n_test_images):
+                    data.append(imageio.imread(f"{root_dir}/Test/image_{'{:02}'.format(indx+1)}.png"))
+                    targets.append(imageio.imread(f"{root_dir}/Test/label_{'{:02}'.format(indx+1)}.png"))
                 if save_npz:
-                    os.makedirs(f"{root_dir}/npz/test")
-                    np.save(f"{root_dir}/npz/test/x_test", data)
-                    np.save(f"{root_dir}/npz/test/y_test", targets)
-                    
-        self.data = np.array(data, dtype=np.float32)/255.0
-        self.targets= np.array(targets, dtype=np.float32)/255.0
+                    os.makedirs(f"{root_dir}/{test_npz}")
+                    np.save(f"{root_dir}/{test_npz}/x_test", data)
+                    np.save(f"{root_dir}/{test_npz}/y_test", targets)
+
+        # setup the data part
+        self.data = torch.from_numpy(np.array(data, dtype=np.float32))
+        self.data = self.data.permute(0, 3, 1, 2)
+
+        # setup targets to be a 2 channel tensor
+        # each channel represents a 0 / 1 class 
+        # of the pixel color
+        self.original_targets = torch.from_numpy(np.array(targets, dtype=np.float32))
+        tmp = torch.zeros(self.original_targets.shape[0], 2, self.original_targets.shape[1], self.original_targets.shape[2])
+        tmp[:, 0, :, :][self.original_targets[:, :, :]==0] = 1
+        tmp[:, 1, :, :][self.original_targets[:, :, :]==1] = 1
+        self.targets = tmp
 
     def __len__(self):
         return len(self.targets)
@@ -78,16 +85,4 @@ class WARWICKDataset(Dataset):
         Returns:
             tuple: (image, target) where target is index of the target class.
         """
-        img, target = self.data[index], self.targets[index]
-
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
-        #img = Image.fromarray(img.numpy(), mode="L")
-
-        if self.transform is not None:
-            img = self.transform(img)
-
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
+        return self.data[index], self.targets[index], self.original_targets[index]
