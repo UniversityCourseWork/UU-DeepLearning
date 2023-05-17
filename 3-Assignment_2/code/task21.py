@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data.dataset
+from torchmetrics.functional import dice
 
 from load_warwick import WARWICKDataset
 import torchvision.transforms as transforms
@@ -54,7 +55,7 @@ class CNN_SEGMENT(nn.Module):
     def forward(self, x):
         # apply convolutional layers
         x = self.convolutional_layers(x)
-        x = F.softmax(x, dim=1)
+        #x = F.softmax(x, dim=1) # softmax is applied in the loss function, so no need to apply here
         return x
 
 def evaluate(model, dt_loader):
@@ -63,7 +64,7 @@ def evaluate(model, dt_loader):
     
     # start evaluation of the model
     model.eval()
-    samples, correct = 0, 0
+    samples, scores = 0, 0
 
     with torch.no_grad():
         for x, _, y in dt_loader:
@@ -71,12 +72,13 @@ def evaluate(model, dt_loader):
             
             y_ = model(x)
             _, predicted = torch.max(y_.detach(), 1)
+            dice_score = [dice(predicted[i].int(), y[i].int()) for i in range(len(predicted))]
             
             samples += y.shape[0]
-            correct += (predicted == y).sum().item()
+            scores += sum(dice_score)
     
-    # return evaluation statistics
-    return {"accuracy" : correct/samples}
+    # return the average dice score
+    return {"accuracy" : scores/samples}
 
 # a function to run model training
 def train_warwick(model, trainset, testset, step_size, epochs, minibatch_size):
@@ -141,7 +143,7 @@ if __name__=="__main__":
     print(f"Training model {modelSEGMENT} on {device} with {sum(p.numel() for p in modelSEGMENT.parameters() if p.requires_grad)} trainable weights.")
     begin_time = time.time()
     # train the model
-    loss_hist_seg, tr_acc_hist_seg, ts_acc_hist_seg= train_warwick(model=modelSEGMENT, trainset=trainset, testset=testset, step_size=1e-4, epochs=5, minibatch_size=10)
+    loss_hist_seg, tr_acc_hist_seg, ts_acc_hist_seg= train_warwick(model=modelSEGMENT, trainset=trainset, testset=testset, step_size=1e-3, epochs=100, minibatch_size=10)
     # print final summary
     print(f"Training model the on cpu took {time.time() - begin_time} seconds.")
     print(f"Final Accuracy: Train = {tr_acc_hist_seg[-1]} and Test = {ts_acc_hist_seg[-1]}")
