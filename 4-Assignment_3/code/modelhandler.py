@@ -13,37 +13,43 @@ class SimpleRNN(nn.Module):
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
+        # create a dropout layer
+        self.dropout_layer = nn.Dropout(dropout)
         # create an embedding layer
-        self.embedding_layers = nn.Embedding(num_tokens, embedding_dim)
+        self.embedding_layer = nn.Embedding(num_tokens, embedding_dim)
         # create hidden RNN layers
-        self.recurrent_layers = nn.RNN(embedding_dim, hidden_dim, num_layers, dropout=dropout)
+        self.recurrent_layer = nn.RNN(embedding_dim, hidden_dim, num_layers, dropout=dropout, nonlinearity="tanh")
         # create output layer
-        #self.output_layers = nn.Linear(in_features=hidden_dim, out_features=num_tokens)
-        self.output_layers = nn.Linear(hidden_dim, num_tokens)
+        self.output_layer = nn.Linear(hidden_dim, num_tokens)
         # initialize weights
         self.init_weights()
 
     def forward(self, input_x, hidden):
         """Forward propagation routine."""
         # apply embedding layer first
-        embedded = self.embedding_layers(input_x)
+        # embedded = self.dropout_layer(self.embedding_layer(input_x))
+        embedded = self.embedding_layer(input_x)
         # apply the hidden RNN layers next
-        output, hidden = self.recurrent_layers(embedded, hidden)
+        output, hidden = self.recurrent_layer(embedded, hidden)
+        # output = self.dropout_layer(output)
         # run the output through
         # the final output layers
-        output = self.output_layers(output)
+        output = self.output_layer(output)
+        # print(output.shape)
         # apply the softmax function on output
         output = output.view(-1, self.num_tokens)
-        output = F.log_softmax(output, dim=1)
+        # print(output.shape)
+        # output = F.softmax(output, dim=1) #F.log_softmax(output, dim=1)
+        # print(output.shape)
         # return the output generated
         return output, hidden
 
     def init_weights(self):
         """Weight initialization routine."""
         initrange = 0.1
-        nn.init.uniform_(self.embedding_layers.weight, -initrange, initrange)
-        nn.init.zeros_(self.output_layers.bias)
-        nn.init.uniform_(self.output_layers.weight, -initrange, initrange)
+        nn.init.uniform_(self.embedding_layer.weight, -initrange, initrange)
+        nn.init.zeros_(self.output_layer.bias)
+        nn.init.uniform_(self.output_layer.weight, -initrange, initrange)
 
     def init_hidden(self, batch_size):
         """Hidden unit initialization routine."""

@@ -23,7 +23,7 @@ class Dictionary(object):
 class BatchHandler():
     """A class to generates and manages batches of a dataset."""
     def __init__(self, data_source: torch.Tensor, batch_size: int, sequence_length: int) -> None:
-        self.batched_data = self.create_batches(input_data=data_source, batch_size=batch_size)
+        self.batched_data, self.n_batches = self.create_batches(input_data=data_source, batch_size=batch_size)
         self.seq_len = sequence_length
         self._counter = 0
 
@@ -38,8 +38,9 @@ class BatchHandler():
         if len(next_batch[0]) == 0:
             raise StopIteration
         return next_batch
-        #else:
-        #    raise StopIteration
+
+    def __len__(self) -> int:
+        return len(self.batched_data)
 
     # formulate batches based on given batch size
     def create_batches(self, input_data: torch.Tensor, batch_size: int) -> torch.Tensor:
@@ -52,7 +53,7 @@ class BatchHandler():
         # finaly create batches of the data
         input_data = input_data.view(batch_size, -1).t().contiguous()
         # return the finalized data
-        return input_data
+        return input_data, n_batches
 
     # create a batching routine to get next data batch
     def get_batch(self, start_index):
