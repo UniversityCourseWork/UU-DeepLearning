@@ -1,0 +1,37 @@
+# Arguments to provide info about the dataset
+DATASET_PATH: ./temp/data
+
+# Arguments to store run data for
+# visualization with tensorboards
+SUMMARY_PATH: ./temp/summary
+
+# Argument to store model checkpoints
+CHECKPOINT_PATH: ./temp/checkpoints/best_model
+
+# Arguments to specify the model
+# architecture to use for training
+MODEL_TYPE: RNN
+SEQUEQNCE_LENGTH: 35
+EMBEDDEDING_SIZE: 200
+NUM_HIDDEN_UNITS: 200
+NUM_LAYERS: 4
+
+# Controlling other aspects of model
+# training like: gradient clipping
+# flow of information etc.
+CLIP_GRADIENT: False
+CLIP_LIMIT: 0.25
+REUSE_HIDDEN: False
+
+# Arguments for control over
+# hyperparameters of model training
+EPOCHS: 25
+TRAIN_BATCH_SIZE: 20
+VALID_BATCH_SIZE: 10
+TESTS_BATCH_SIZE: 10
+
+DEVICE: AUTO
+OPTIMIZER_NAME: SGD # ADAM
+LEARN_RATE: 0.1
+CRITERION: CROSSENTROPY # NLLLOSS
+RANDOM_SEED: 1000

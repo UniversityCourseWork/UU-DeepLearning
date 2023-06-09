@@ -1,13 +1,18 @@
 """Main module of the code that brings everything together."""
 
-import torch
-from torch import nn
-import torch.nn.functional as F
+import os
 import math
+import datetime
 
+import torch
+import torch.nn.functional as F
+from torch import nn
+from torch.utils.tensorboard import SummaryWriter
+
+from configs import parse_configs
 from datahandler import Corpus
 from modelhandler import SimpleRNN
-
+#import numpy as np
 
 def repackage_hidden(hidden):
     """Wraps hidden states in new Tensors, to detach them from their history."""
@@ -58,13 +63,13 @@ def evaluate(model, criterion, data_source, batch_size, device):
     return total_loss / (len(data_source)-1)
 
 
-def train(model, device, criterion, optimizer, data_source, batch_size, lr, clip=0.25):
+def train(model, device, criterion, optimizer, data_source, batch_size, lr, hidden, clip_norm=False, clip_limit=0.25):
     """A function to handle the training routine of the RNN."""
     # prepare model for training
     model.train()
     total_loss = 0.0
     grand_total_loss = 0.0
-    hidden = model.init_hidden(batch_size=batch_size)
+    # hidden = model.init_hidden(batch_size=batch_size)
 
     for indx, batch in enumerate(data_source):
         data, targets = batch
@@ -78,9 +83,10 @@ def train(model, device, criterion, optimizer, data_source, batch_size, lr, clip
         optimizer.step()
         
         # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-        #torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
-        #for p in model.parameters():
-        #    p.data.add_(p.grad, alpha=-lr)
+        if clip_norm:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), clip_limit)
+            for p in model.parameters():
+                p.data.add_(p.grad, alpha=-lr)
 
         total_loss += loss.item()
         grand_total_loss += loss.item()
@@ -91,84 +97,102 @@ def train(model, device, criterion, optimizer, data_source, batch_size, lr, clip
             print(f"| {indx:5d}  / {data_source.n_batches//data_source.seq_len:5d} batches | lr = {lr:02.2f} | train loss = {current_loss:5.4f} | train perplexity = {math.exp(current_loss):20.2f}")
             total_loss = 0.0
 
-    return grand_total_loss
+    return grand_total_loss / indx
 
 
-def train_model(criterion,
-                data_path: str,
-                tr_bs: float,
-                vl_bs: float,
-                ts_bs: float,
-                epochs: int,
-                seq_len: int,
-                embedd_dim: int,
-                hidden_dim: int,
-                num_layers: int,
-                learn_rate: float,
-                optim_name: str = "SGD",
-                model_name: str = "RNN"):
+def train_model():
     """A function to handle the training routine of the RNN."""
-    corpus = Corpus(root_path=data_path,
-                    sequence_length=seq_len,
-                    tr_batchsize=tr_bs,
-                    vl_batchsize=vl_bs,
-                    ts_batchsize=ts_bs)
+    global user_options
+    torch.manual_seed(user_options["RANDOM_SEED"])
+
+    corpus = Corpus(root_path=user_options["DATASET_PATH"],
+                    sequence_length=user_options["SEQUEQNCE_LENGTH"],
+                    tr_batchsize=user_options["TRAIN_BATCH_SIZE"],
+                    vl_batchsize=user_options["VALID_BATCH_SIZE"],
+                    ts_batchsize=user_options["TESTS_BATCH_SIZE"])
 
     # check which device to run the code on
     # use GPU whenever it is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    if model_name == "RNN":
+    if user_options["MODEL_TYPE"] == "RNN":
         model = SimpleRNN(num_tokens=len(corpus.dictionary),
-                                embedding_dim=embedd_dim,
-                                hidden_dim=hidden_dim,
-                                num_layers=num_layers)
+                          embedding_dim=user_options["EMBEDDEDING_SIZE"],
+                          hidden_dim=user_options["NUM_HIDDEN_UNITS"],
+                          num_layers=user_options["NUM_LAYERS"])
 
-    if optim_name == "SGD":
-        optimizer = torch.optim.SGD(model.parameters(), lr=learn_rate)
-    elif optim_name == "ADAM":
-        optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate)
+    if user_options["OPTIMIZER_NAME"] == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=user_options["LEARN_RATE"])
+    elif user_options["OPTIMIZER_NAME"] == "ADAM":
+        optimizer = torch.optim.Adam(model.parameters(), lr=user_options["LEARN_RATE"])
 
     model.to(device=device)
     best_val_loss = None
+    # create a loss function
+    criterion = nn.NLLLoss() if user_options["CRITERION"] == "NLLLOSS" else nn.CrossEntropyLoss()
+
+    # create a tensorboard writer to keep track of stats
+    tbWriter = SummaryWriter(
+        log_dir=user_options["SUMMARY_PATH"] + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    )
 
     try:
+        # initialize hidden state
+        hidden = model.init_hidden(batch_size=user_options["TRAIN_BATCH_SIZE"])
         # train the model
-        for epoch in range(epochs):
-            epoch_loss = train(model=model,
+        for epoch in range(user_options["EPOCHS"]):
+            
+            if not user_options["REUSE_HIDDEN"]:
+                hidden = model.init_hidden(batch_size=user_options["TRAIN_BATCH_SIZE"])
+            
+            train_loss = train(model=model,
                                device=device,
                                criterion=criterion,
                                optimizer=optimizer,
                                data_source=corpus.train_batches,
-                               batch_size=tr_bs,
-                               lr=learn_rate)
+                               batch_size=user_options["TRAIN_BATCH_SIZE"],
+                               lr=user_options["LEARN_RATE"],
+                               hidden=hidden,
+                               clip_norm=user_options["CLIP_GRADIENT"],
+                               clip_limit=user_options["CLIP_LIMIT"])
+            
             val_loss = evaluate(model=model,
                                 data_source=corpus.valid_batches,
-                                batch_size=vl_bs,
+                                batch_size=user_options["VALID_BATCH_SIZE"],
                                 criterion=criterion,
                                 device=device)
+
+            tbWriter.add_scalar("Train_Loss", train_loss, epoch)
+            tbWriter.add_scalar("Valid_Loss", val_loss, epoch)
+            tbWriter.add_scalar("Train_PPL", math.exp(train_loss), epoch)
+            tbWriter.add_scalar("Valid_PPL", math.exp(val_loss), epoch)
+
             print('-' * 105)
-            print(f"|   End of Epoch {epoch+1:4d} of {epochs:4d}   ||   Valid Loss = {val_loss:5.2f}   ||   Valid Perplexity = {math.exp(val_loss):20.2f}")
+            print(f"|   End of Epoch {epoch+1:4d} of {user_options['EPOCHS']:4d}   ||   Valid Loss = {val_loss:5.2f}   ||   Valid Perplexity = {math.exp(val_loss):20.2f}")
             print('-' * 105)
 
             # Save the model if the validation loss is the best we've seen so far.
             if not best_val_loss or val_loss < best_val_loss:
-                with open("./checkpoints/best_model.pt", 'wb') as f:
+                os.makedirs(os.path.dirname(user_options['CHECKPOINT_PATH']), exist_ok=True)
+                with open(user_options['CHECKPOINT_PATH'], 'wb') as f:
                     torch.save(model, f)
                 best_val_loss = val_loss
             else:
                 # Reduce learning rate
-                learn_rate /= 1.5
+                user_options["LEARN_RATE"] /= 1.5
     except KeyboardInterrupt:
-        pass
+        print("|     Keyboard Interrupt, ending model training")
+    
+    tbWriter.close()
     
     # evaluate the model on test dataset
     test_loss = evaluate(model=model,
                          data_source=corpus.test_batches,
-                         batch_size=ts_bs,
+                         batch_size=user_options["TESTS_BATCH_SIZE"],
                          criterion=criterion,
                          device=device)
+    
     # print out final statistics on test data
     print('=' * 105)
     print(f"|     End of Training     ||     Test Loss = {test_loss:5.2f}     ||     Test Perplexity = {math.exp(test_loss):20.2f}")
@@ -179,33 +203,6 @@ def train_model(criterion,
 
 
 if __name__ == "__main__":
-    # Global Variables that contain all the
-    # hyperparameters in central location
-    DATA_PATH = "./dataset/data/"
-    BATCH_SIZE = 20
-    SEQ_LEN = 35
-    EMBEDD_DIM = 200
-    HIDDEN_DIM = 200
-    NUM_LAYERS = 4
-    EPOCHS = 100
-    # CRITERION = nn.NLLLoss()
-    CRITERION = nn.CrossEntropyLoss()
-    OPTIM_NAME = "SGD"
-    LEARN_RATE = 0.1
-    SEED = 1111
-
-    torch.manual_seed(SEED)
-
-    train_model(model_name="RNN",
-                optim_name=OPTIM_NAME,
-                learn_rate=LEARN_RATE,
-                criterion=CRITERION,
-                epochs=EPOCHS,
-                data_path=DATA_PATH,
-                seq_len=SEQ_LEN,
-                tr_bs=BATCH_SIZE,
-                ts_bs=BATCH_SIZE,
-                vl_bs=BATCH_SIZE,
-                embedd_dim=EMBEDD_DIM,
-                hidden_dim=HIDDEN_DIM,
-                num_layers=NUM_LAYERS)
+    global user_options
+    user_options = parse_configs("./configs/config.yml")
+    train_model()
