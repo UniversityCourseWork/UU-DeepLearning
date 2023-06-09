@@ -171,4 +171,4 @@ cython_debug/
 4-Assignment_3/others
 4-Assignment_3/code/dataset
 
-4-Assignment_3/code/checkpoints/best_model.pt
+4-Assignment_3/code/temp/*
