@@ -7,70 +7,23 @@ import datetime
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard.writer import SummaryWriter
 
 from configs import parse_configs
 from datahandler import Corpus
 from modelhandler import SimpleRNN
-#import numpy as np
-
-def repackage_hidden(hidden):
-    """Wraps hidden states in new Tensors, to detach them from their history."""
-    if isinstance(hidden, torch.Tensor):
-        return hidden.detach()
-    else:
-        return tuple(repackage_hidden(v) for v in hidden)
+from evaluate_model import predict, evaluate, repackage_hidden
 
 
-def predict(model, corpus, n_words, device, temp=1.0):
-    """A function to handle the predictions from the RNN."""
-    # put the model in evaluation mode
-    model.eval()
-
-    input_words = torch.randint(len(corpus.dictionary), (1, 1), dtype=torch.long).to(device)
-    sentence = []
-    
-    hidden = model.init_hidden(1)
-    with torch.no_grad():
-        for i in range(n_words):
-            output, hidden = model(input_words, hidden)
-            # word_idx = torch.argmax(output, dim=1).cpu().item()
-            word_weights = output.squeeze().div(temp).exp().cpu()
-            word_idx = torch.multinomial(word_weights, 1)[0]
-            input_words.fill_(word_idx)
-            sentence.append(corpus.dictionary.idx2word[word_idx])
-        print(sentence)
-
-
-def evaluate(model, criterion, data_source, batch_size, device):
-    """A function to handle the evaluation routine of the RNN."""
-    # put the model in evaluation mode
-    model.eval()
-
-    total_loss = 0.0
-    hidden = model.init_hidden(batch_size=batch_size)
-
-    # perform evaluation
-    with torch.no_grad():
-        for batch in data_source:
-            data, targets = batch
-            data, targets = data.to(device), targets.to(device)
-            output, hidden = model(data, hidden)
-            hidden = repackage_hidden(hidden)
-            total_loss += len(data) * criterion(output, targets).item()
-
-    # return average loss
-    return total_loss / (len(data_source)-1)
-
-
-def train(model, device, criterion, optimizer, data_source, batch_size, lr, hidden, clip_norm=False, clip_limit=0.25):
+def train(model, device, criterion, optimizer, data_source, batch_size, lr, hidden, clip_norm=False, clip_limit=0.25, log_interval=100):
     """A function to handle the training routine of the RNN."""
     # prepare model for training
     model.train()
     total_loss = 0.0
     grand_total_loss = 0.0
     # hidden = model.init_hidden(batch_size=batch_size)
-
+    total_batches = 0
+    
     for indx, batch in enumerate(data_source):
         data, targets = batch
         data, targets = data.to(device), targets.to(device)
@@ -80,32 +33,31 @@ def train(model, device, criterion, optimizer, data_source, batch_size, lr, hidd
         output, hidden = model(data, hidden)
         loss = criterion(output, targets)
         loss.backward()
-        optimizer.step()
-        
         # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
         if clip_norm:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), clip_limit)
-            for p in model.parameters():
-                p.data.add_(p.grad, alpha=-lr)
+            torch.nn.utils.clip_grad.clip_grad_norm_(model.parameters(), clip_limit)
+            #for p in model.parameters():
+            #    p.data.add_(p.grad, alpha=-lr)
+        optimizer.step()
 
         total_loss += loss.item()
         grand_total_loss += loss.item()
+        total_batches += 1
 
         # printout a log message
-        if indx % 200 == 0 and indx > 0:
-            current_loss = total_loss / 200
+        if indx % log_interval == 0 and indx > 0:
+            current_loss = total_loss / log_interval
             print(f"| {indx:5d}  / {data_source.n_batches//data_source.seq_len:5d} batches | lr = {lr:02.2f} | train loss = {current_loss:5.4f} | train perplexity = {math.exp(current_loss):20.2f}")
             total_loss = 0.0
 
-    return grand_total_loss / indx
+    return grand_total_loss / total_batches
 
 
-def train_model():
+def train_model(common_options, user_options):
     """A function to handle the training routine of the RNN."""
-    global user_options
     torch.manual_seed(user_options["RANDOM_SEED"])
 
-    corpus = Corpus(root_path=user_options["DATASET_PATH"],
+    corpus = Corpus(root_path=common_options["DATASET_PATH"],
                     sequence_length=user_options["SEQUEQNCE_LENGTH"],
                     tr_batchsize=user_options["TRAIN_BATCH_SIZE"],
                     vl_batchsize=user_options["VALID_BATCH_SIZE"],
@@ -116,12 +68,15 @@ def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    if user_options["MODEL_TYPE"] == "RNN":
-        model = SimpleRNN(num_tokens=len(corpus.dictionary),
-                          embedding_dim=user_options["EMBEDDEDING_SIZE"],
-                          hidden_dim=user_options["NUM_HIDDEN_UNITS"],
-                          num_layers=user_options["NUM_LAYERS"])
-
+    #if user_options["MODEL_TYPE"] == "RNN":
+    model = SimpleRNN(num_tokens=len(corpus.dictionary),
+                      nonlinearity=user_options["NONLINEARITY"],
+                      rec_layer=user_options["MODEL_TYPE"],
+                      embedding_dim=user_options["EMBEDDEDING_SIZE"],
+                      hidden_dim=user_options["NUM_HIDDEN_UNITS"],
+                      num_layers=user_options["NUM_LAYERS"])
+    
+    optimizer = None
     if user_options["OPTIMIZER_NAME"] == "SGD":
         optimizer = torch.optim.SGD(model.parameters(), lr=user_options["LEARN_RATE"])
     elif user_options["OPTIMIZER_NAME"] == "ADAM":
@@ -134,7 +89,7 @@ def train_model():
 
     # create a tensorboard writer to keep track of stats
     tbWriter = SummaryWriter(
-        log_dir=user_options["SUMMARY_PATH"] + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        log_dir=common_options["SUMMARY_PATH"] + "/" + user_options["SUMMARY_PREFIX"] + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
     )
 
     try:
@@ -155,7 +110,8 @@ def train_model():
                                lr=user_options["LEARN_RATE"],
                                hidden=hidden,
                                clip_norm=user_options["CLIP_GRADIENT"],
-                               clip_limit=user_options["CLIP_LIMIT"])
+                               clip_limit=user_options["CLIP_LIMIT"],
+                               log_interval=user_options["LOG_INTERVAL"])
             
             val_loss = evaluate(model=model,
                                 data_source=corpus.valid_batches,
@@ -203,6 +159,14 @@ def train_model():
 
 
 if __name__ == "__main__":
-    global user_options
-    user_options = parse_configs("./configs/config.yml")
-    train_model()
+    all_experiments = parse_configs("./configs/train_configs.yml")
+    for exp_name, exp_hyp in all_experiments["EXPERIMENTS"].items():
+        if exp_name not in ["EXP_02", "EXP_06","EXP_22", "EXP_26"]:
+            print(f"Skipping experiment {exp_name}...")
+            continue
+        
+        try:
+            print(f"Running experiment {exp_name}...")
+            train_model(common_options=all_experiments["COMMONS"], user_options=exp_hyp)
+        except:
+            print(f"Failed experiment {exp_name}...")

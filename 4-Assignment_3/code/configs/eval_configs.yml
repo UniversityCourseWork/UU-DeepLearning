@@ -1,0 +1,16 @@
+# Arguments to provide info about the dataset
+DATASET_PATH: ./temp/data
+
+# Argument to specify stored model checkpoints
+CHECKPOINT_PATH: ./temp/checkpoints
+
+# Argument to specify the sequence length
+SEQUEQNCE_LENGTH: 50
+
+# Argument to specify the batch size to use
+# for evaluation of the test set
+BATCH_SIZE: 25
+
+# Argument to specify the Cirterion for
+# evaluation (should it be same as in training??)
+CRITERION: CROSSENTROPY # NLLLOSS

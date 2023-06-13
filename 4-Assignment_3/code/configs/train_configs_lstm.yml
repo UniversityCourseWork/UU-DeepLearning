@@ -1,0 +1,568 @@
+COMMONS:
+    # Arguments to provide info about the dataset
+    DATASET_PATH: ./temp/data
+
+    # Arguments to store run data for
+    # visualization with tensorboards
+    SUMMARY_PATH: ./temp/summary
+
+EXPERIMENTS:
+    EXP_21:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_21-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp21_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: False
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_22:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_22-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp22_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_23:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_23-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp23_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 0.5
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_24:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_24-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp24_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 0.75
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_25:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_25-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp25_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.25
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_26:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_26-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp22_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.5
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_27:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_27-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp27_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: relu
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: False
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: SGD
+        LEARN_RATE: 0.1
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+
+    EXP_28:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_28-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp28_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: False
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_29:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_29-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp29_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_30:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_30-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp30_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 0.5
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_31:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_31-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp31_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 0.75
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_32:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_32-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp32_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.25
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_33:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_33-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp33_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: tanh
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: True
+        CLIP_LIMIT: 1.5
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100
+    
+    EXP_34:
+        # Argument to add prefix to summary
+        # used to create graphs in tensorboard
+        SUMMARY_PREFIX: EXP_34-
+
+        # Argument to store model checkpoints
+        CHECKPOINT_PATH: ./temp/checkpoints/exp34_best.pt
+
+        # Arguments to specify the model
+        # architecture to use for training
+        MODEL_TYPE: LSTM
+        NONLINEARITY: relu
+        SEQUEQNCE_LENGTH: 30
+        EMBEDDEDING_SIZE: 1000
+        NUM_HIDDEN_UNITS: 1000
+        NUM_LAYERS: 2
+
+        # Controlling other aspects of model
+        # training like: gradient clipping
+        # flow of information etc.
+        CLIP_GRADIENT: False
+        CLIP_LIMIT: 1.0
+        REUSE_HIDDEN: False
+
+        # Arguments for control over
+        # hyperparameters of model training
+        EPOCHS: 50
+        TRAIN_BATCH_SIZE: 25
+        VALID_BATCH_SIZE: 20
+        TESTS_BATCH_SIZE: 20
+
+        DEVICE: AUTO
+        OPTIMIZER_NAME: ADAM
+        LEARN_RATE: 0.0001
+        CRITERION: CROSSENTROPY # NLLLOSS
+        RANDOM_SEED: 1000
+
+        # Other Arguments
+        LOG_INTERVAL: 100

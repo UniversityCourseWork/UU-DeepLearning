@@ -6,19 +6,23 @@ import torch.nn.functional as F
 # create a simple RNN model
 class SimpleRNN(nn.Module):
     """Simple Recurrent Neural Network implementation."""
-    def __init__(self, num_tokens, embedding_dim, hidden_dim, num_layers, dropout=0.5):
+    def __init__(self, num_tokens, embedding_dim, hidden_dim, num_layers, nonlinearity, rec_layer, dropout=0.5):
         super(SimpleRNN, self).__init__()
         # save parameters as class variables
         self.num_tokens = num_tokens
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
+        self.model_type = rec_layer
         # create a dropout layer
         self.dropout_layer = nn.Dropout(dropout)
         # create an embedding layer
         self.embedding_layer = nn.Embedding(num_tokens, embedding_dim)
         # create hidden RNN layers
-        self.recurrent_layer = nn.RNN(embedding_dim, hidden_dim, num_layers, dropout=dropout, nonlinearity="tanh")
+        if rec_layer == "RNN":
+            self.recurrent_layer = nn.RNN(embedding_dim, hidden_dim, num_layers, dropout=dropout, nonlinearity=nonlinearity)#, batch_first=True)
+        elif rec_layer == "LSTM":
+            self.recurrent_layer = nn.LSTM(embedding_dim, hidden_dim, num_layers, dropout=dropout)#, batch_first=True)
         # create output layer
         self.output_layer = nn.Linear(hidden_dim, num_tokens)
         # initialize weights
@@ -54,6 +58,8 @@ class SimpleRNN(nn.Module):
     def init_hidden(self, batch_size):
         """Hidden unit initialization routine."""
         weight = next(self.parameters())
-        return weight.new_zeros(self.num_layers, batch_size, self.hidden_dim)
-        #return (weight.new_zeros(self.num_layers, batch_size, self.hidden_dim),
-        #        weight.new_zeros(self.num_layers, batch_size, self.hidden_dim))
+        if self.model_type == "RNN":
+            return weight.new_zeros(self.num_layers, batch_size, self.hidden_dim)
+        elif self.model_type == "LSTM":
+            return (weight.new_zeros(self.num_layers, batch_size, self.hidden_dim),
+                    weight.new_zeros(self.num_layers, batch_size, self.hidden_dim))
